@@ -27,4 +27,8 @@ public class AnsattUseCase {
     public List<AnsattDom> execute(String search) throws Exception {
         return repository.getSearch(search);
     }
+
+    public List<AnsattDom> gettingAvailible() throws Exception {
+        return repository.getAllAnsatt();
+    }
 }

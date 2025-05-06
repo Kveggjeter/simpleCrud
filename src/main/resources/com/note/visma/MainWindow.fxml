@@ -93,9 +93,9 @@
                               <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                  <children>
                                     <Label layoutX="15.0" layoutY="14.0" prefHeight="17.0" prefWidth="76.0" text="Ansatt" />
-                                    <ChoiceBox layoutX="15.0" layoutY="37.0" prefWidth="150.0" />
+                                    <ChoiceBox fx:id="ansattChoiceBox" layoutX="15.0" layoutY="37.0" prefWidth="150.0" />
                                     <Label layoutX="16.0" layoutY="71.0" prefHeight="17.0" prefWidth="76.0" text="Stilling" />
-                                    <ChoiceBox layoutX="15.0" layoutY="94.0" prefWidth="150.0" />
+                                    <ChoiceBox fx:id="stillingChoiceBox" layoutX="15.0" layoutY="94.0" prefWidth="150.0" />
                                     <Button layoutX="16.0" layoutY="128.0" mnemonicParsing="false" text="Tildel" />
                                  </children>
                               </AnchorPane>

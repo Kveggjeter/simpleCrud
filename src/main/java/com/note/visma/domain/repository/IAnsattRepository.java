@@ -12,5 +12,6 @@ public interface IAnsattRepository {
     public AnsattDom getById(int id) throws SQLException;
     public void deleteById(int id) throws SQLException;
     public List<AnsattDom> getSearch(String search) throws SQLException;
+    public List<AnsattDom> getAllAnsatt() throws SQLException;
 }
 

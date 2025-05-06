@@ -5,15 +5,21 @@ import com.note.visma.domain.model.OppgaveDom;
 import com.note.visma.domain.model.StillingDom;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
+
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ViewController {
 
@@ -96,6 +102,10 @@ public class ViewController {
     private TextField ansattIdField;
     @FXML
     private TextField searchTableField;
+    @FXML
+    private ChoiceBox<AnsattDom> ansattChoiceBox;
+    @FXML
+    private ChoiceBox<StillingDom> stillingChoiceBox;
 
     private boolean ansattVindu = false;
     private boolean stillingVindu = false;
@@ -120,6 +130,11 @@ public class ViewController {
         oppgaveAnsattIdCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().ansattID()));
         oppgaveStartCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().startDato()));
         oppgaveSluttCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().sluttDato()));
+        try {
+            populateAnsattChoiceBox();
+        } catch (Exception e) {
+            System.out.println("Oopsie tihi");
+        }
     }
 
     public void loadTables() {
@@ -155,6 +170,28 @@ public class ViewController {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void populateAnsattChoiceBox() throws Exception {
+
+        List<AnsattDom> ansatt = viewModel.gettingAvailible();
+        ansatt.removeIf(Objects::isNull);
+        ObservableList<AnsattDom> list = FXCollections.observableArrayList(ansatt);
+        ansattChoiceBox.setItems(list);
+        ansattChoiceBox.setConverter(new StringConverter<AnsattDom>() {
+            @Override
+            public String toString(AnsattDom a) {
+                if (a == null) {
+                    return "";
+                }
+                return "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn();
+            }
+            @Override
+            public AnsattDom fromString(String string) {
+                return null;
+            }
+        });
+
     }
 
 

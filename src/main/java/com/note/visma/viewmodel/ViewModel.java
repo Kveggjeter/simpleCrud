@@ -43,6 +43,9 @@ public class ViewModel {
         return ansattUseCase.execute(search);
     }
 
+    public List<AnsattDom> gettingAvailible() throws Exception {
+        return ansattUseCase.gettingAvailible();
+    }
 
     public List<StillingDom> getStillinger() throws SQLException {
         return stillingUseCase.execute();

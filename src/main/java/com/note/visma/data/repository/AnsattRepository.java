@@ -76,7 +76,27 @@ public class AnsattRepository implements IAnsattRepository {
         return ansatte;
     }
 
+    @Override
+    public List<AnsattDom> getAllAnsatt() throws SQLException {
+        List<AnsattDom> ansatte = new ArrayList<>();
+        String sql = "SELECT a.ansatt_id, a.fornavn, a.etternavn " +
+                "FROM ansatte a " +
+                "WHERE a.ansatt_id IN (SELECT ansatt_id FROM stillinger)";
 
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Ansatt dataAnsatt = new Ansatt(
+                        rs.getInt("ansatt_id"),
+                        rs.getString("fornavn"),
+                        rs.getString("etternavn")
+                );
+                ansatte.add(dataAnsatt.toDomain());
+            }
+        }
+        return ansatte;
+    }
 
     @Override
     public AnsattDom getById(int id) throws SQLException {
