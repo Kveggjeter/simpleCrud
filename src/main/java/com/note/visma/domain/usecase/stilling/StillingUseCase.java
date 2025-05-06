@@ -29,4 +29,8 @@ public class StillingUseCase {
         return repository.getSearch(search);
     }
 
+    public StillingDom getByAnsattId(int id) throws Exception {
+        return repository.getByAnsattId(id);
+    }
+
 }

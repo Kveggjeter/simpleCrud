@@ -3,23 +3,20 @@ package com.note.visma.viewmodel;
 import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.model.OppgaveDom;
 import com.note.visma.domain.model.StillingDom;
+import com.note.visma.domain.service.CheckForDate;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
-
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class ViewController {
 
@@ -103,9 +100,13 @@ public class ViewController {
     @FXML
     private TextField searchTableField;
     @FXML
-    private ChoiceBox<AnsattDom> ansattChoiceBox;
+    private ChoiceBox<AnsattDom> ansattChoiceStillingBox;
     @FXML
     private ChoiceBox<StillingDom> stillingChoiceBox;
+    @FXML
+    private ChoiceBox<AnsattDom> ansattChoiceOppgaveBox;
+    @FXML
+    private ChoiceBox<OppgaveDom> oppgaveChoiceBox;
 
     private boolean ansattVindu = false;
     private boolean stillingVindu = false;
@@ -131,7 +132,11 @@ public class ViewController {
         oppgaveStartCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().startDato()));
         oppgaveSluttCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().sluttDato()));
         try {
-            populateAnsattChoiceBox();
+            populateChoiceBox(ansattChoiceOppgaveBox, viewModel.gettingAvailible(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
+            populateChoiceBox(ansattChoiceStillingBox, viewModel.gettingAvailible(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
+            populateChoiceBox(oppgaveChoiceBox, viewModel.getOppgaver(), o -> "[" + o.oppgaveID() + "] " + o.oppgaveNavn());
+            populateChoiceBox(stillingChoiceBox, viewModel.getStillinger(), s -> "[" + s.stillingID() + "] " + s.stillingNavn());
+
         } catch (Exception e) {
             System.out.println("Oopsie tihi");
         }
@@ -172,26 +177,50 @@ public class ViewController {
         }
     }
 
-    private void populateAnsattChoiceBox() throws Exception {
+    @FXML
+    private void onTildelNyStilling(){
 
-        List<AnsattDom> ansatt = viewModel.gettingAvailible();
-        ansatt.removeIf(Objects::isNull);
-        ObservableList<AnsattDom> list = FXCollections.observableArrayList(ansatt);
-        ansattChoiceBox.setItems(list);
-        ansattChoiceBox.setConverter(new StringConverter<AnsattDom>() {
-            @Override
-            public String toString(AnsattDom a) {
-                if (a == null) {
-                    return "";
-                }
-                return "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn();
+    }
+
+    @FXML
+    private void onTildelNyOppgave() {
+        OppgaveDom oppgave =  oppgaveChoiceBox.getValue();
+        AnsattDom ansatt = ansattChoiceOppgaveBox.getValue();
+
+        try {
+            StillingDom stilling = viewModel.getByAnsattId(ansatt.ansattID());
+            if (CheckForDate.isDateValid(stilling, oppgave)) {
+                viewModel.updateOppgave(ansatt.ansattID(), oppgave.oppgaveID());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Oppgave tildel");
+                alert.setHeaderText(null);
+                alert.setContentText("Ansatt har fått ny oppgave");
+                alert.showAndWait();
             }
-            @Override
-            public AnsattDom fromString(String string) {
-                return null;
+            else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Ingen korrelasjon med tid");
+                alert.setHeaderText(null);
+                alert.setContentText("Ansatt har ingen aktiv stilling i den perioden oppgaven skal utføres!");
+                alert.showAndWait();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            oppgaveChoiceBox.setValue(null);
+            ansattChoiceOppgaveBox.setValue(null);
+        }
+
+
+    }
+
+    private <T> void populateChoiceBox(ChoiceBox<T> box, List<T> items, Function<T, String> fun) {
+        items.removeIf(Objects::isNull);
+        box.setItems(FXCollections.observableList(items));
+        box.setConverter(new StringConverter<>() {
+            @Override public String toString(T o) { return o==null ? "" : fun.apply(o); }
+            @Override public T fromString(String s) { return null; }
         });
-
     }
 
 

@@ -30,4 +30,8 @@ public class OppgaveUseCase {
         return repository.getSearch(search);
     }
 
+    public void execute(int ansattID, int oppgaveID) throws SQLException {
+        repository.updateById(ansattID, oppgaveID);
+    }
+
 }

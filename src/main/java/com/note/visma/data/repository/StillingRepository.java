@@ -90,6 +90,27 @@ public class StillingRepository implements IStillingRepository {
     }
 
     @Override
+    public StillingDom getByAnsattId(int id) throws SQLException {
+        String sql = "SELECT * FROM stillinger WHERE ansatt_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Stilling dataStilling = new Stilling(
+                            rs.getInt("stilling_id"),
+                            rs.getString("stilling_navn"),
+                            rs.getInt("ansatt_id"),
+                            rs.getDate("start_dato"),
+                            rs.getDate("slutt_dato")
+                    );
+                    return dataStilling.toDomain();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public StillingDom getById(int id) throws SQLException {
         String sql = "SELECT * FROM stillinger WHERE stilling_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

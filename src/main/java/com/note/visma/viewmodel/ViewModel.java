@@ -47,6 +47,11 @@ public class ViewModel {
         return ansattUseCase.gettingAvailible();
     }
 
+    public StillingDom getByAnsattId(int id) throws Exception {
+        return stillingUseCase.getByAnsattId(id);
+    }
+
+
     public List<StillingDom> getStillinger() throws SQLException {
         return stillingUseCase.execute();
     }
@@ -76,5 +81,8 @@ public class ViewModel {
     }
     public List<OppgaveDom> searchOppgave(String search) throws Exception {
         return oppgaveUseCase.execute(search);
+    }
+    public void updateOppgave(int ansattID, int oppgaveID) throws SQLException {
+        oppgaveUseCase.execute(ansattID, oppgaveID);
     }
 }

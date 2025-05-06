@@ -11,4 +11,5 @@ public interface IOppgaveRepository {
     public OppgaveDom getById(int id) throws SQLException;
     public void deleteById(int id) throws SQLException;
     public List<OppgaveDom> getSearch(String search) throws SQLException;
+    public void updateById(int ansattID, int oppgaveID) throws SQLException;
 }

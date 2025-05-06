@@ -108,6 +108,19 @@ public class OppgaveRepository implements IOppgaveRepository {
         return null;
     }
 
+    public void updateById(int ansattID, int oppgaveID) throws SQLException {
+        String sql = "UPDATE oppgaver SET ansatt_id = ? WHERE oppgave_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, ansattID);
+            stmt.setInt(2, oppgaveID);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new SQLException("Ingen rader oppdatert – finnes det en stilling med oppgave_id = " + oppgaveID + "?");
+            }
+        }
+    }
+
     @Override
     public void deleteById(int id) throws SQLException {
         String sql = "DELETE FROM oppgaver WHERE oppgave_id = ?";

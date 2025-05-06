@@ -11,6 +11,7 @@ IStillingRepository {
     public StillingDom getById(int id) throws SQLException;
     public void deleteById(int id) throws SQLException;
     public List<StillingDom> getSearch(String search) throws SQLException;
+    public StillingDom getByAnsattId(int id) throws SQLException;
 
 
 }

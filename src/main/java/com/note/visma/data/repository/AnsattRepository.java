@@ -4,7 +4,6 @@ import com.note.visma.data.datasource.DbConnect;
 import com.note.visma.data.model.Ansatt;
 import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.repository.IAnsattRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
