@@ -1,16 +1,15 @@
-package com.note.visma.domain.usecase.oppgave;
+package com.note.visma.viewmodel;
 
-import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.model.OppgaveDom;
 import com.note.visma.domain.repository.IOppgaveRepository;
 import java.sql.SQLException;
 import java.util.List;
 
-public class OppgaveUseCase {
+public class ViewModelOppgave {
 
     private final IOppgaveRepository repository;
 
-    public OppgaveUseCase(IOppgaveRepository repository) {
+    public ViewModelOppgave(IOppgaveRepository repository) {
         this.repository = repository;
     }
 
@@ -33,5 +32,4 @@ public class OppgaveUseCase {
     public void execute(int ansattID, int oppgaveID) throws SQLException {
         repository.updateById(ansattID, oppgaveID);
     }
-
 }

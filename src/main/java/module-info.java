@@ -2,7 +2,6 @@ module com.note.visma {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
-
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;
@@ -17,9 +16,6 @@ module com.note.visma {
     exports com.note.visma;
     exports com.note.visma.viewmodel;
     exports com.note.visma.domain.repository;
-    exports com.note.visma.domain.usecase.ansatt;
-    exports com.note.visma.domain.usecase.oppgave;
-    exports com.note.visma.domain.usecase.stilling;
     exports com.note.visma.domain.model;
     opens com.note.visma.viewmodel to javafx.fxml;
 }

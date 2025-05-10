@@ -1,14 +1,15 @@
-package com.note.visma.domain.usecase.ansatt;
+package com.note.visma.viewmodel;
 
 import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.repository.IAnsattRepository;
+
 import java.util.List;
 
-public class AnsattUseCase {
+public class ViewModelAnsatt {
 
     private final IAnsattRepository repository;
 
-    public AnsattUseCase(IAnsattRepository repository) {
+    public ViewModelAnsatt(IAnsattRepository repository) {
         this.repository = repository;
     }
 

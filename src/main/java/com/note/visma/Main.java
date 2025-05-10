@@ -7,11 +7,7 @@ import com.note.visma.data.repository.StillingRepository;
 import com.note.visma.domain.repository.IAnsattRepository;
 import com.note.visma.domain.repository.IOppgaveRepository;
 import com.note.visma.domain.repository.IStillingRepository;
-import com.note.visma.domain.usecase.ansatt.AnsattUseCase;
-import com.note.visma.domain.usecase.oppgave.OppgaveUseCase;
-import com.note.visma.domain.usecase.stilling.StillingUseCase;
-import com.note.visma.viewmodel.ViewController;
-import com.note.visma.viewmodel.ViewModel;
+import com.note.visma.viewmodel.*;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -24,31 +20,32 @@ public class Main extends Application {
     public void start(Stage stage) throws IOException {
 
         ConnectDb.initialize();
-        ViewModel viewModel = getViewModel();
+        ViewModelAnsatt vma = getViewModelAnsatt();
+        ViewModelStilling vms = getViewModelStilling();
+        ViewModelOppgave vmo = getViewModelOppgave();
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("MainWindow.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         ViewController controller = fxmlLoader.getController();
-        controller.setViewModel(viewModel);
+        controller.setViewModel(vma, vmo, vms);
 
         stage.setTitle("Visma sysselsettingsportal");
         stage.setScene(scene);
         stage.show();
     }
 
-    private static ViewModel getViewModel() {
-        IAnsattRepository ansattRepository = new AnsattRepository();
+    private static ViewModelStilling getViewModelStilling() {
         IStillingRepository stillingRepository = new StillingRepository();
+        return new ViewModelStilling(stillingRepository);
+    }
+
+    private static ViewModelOppgave getViewModelOppgave() {
         IOppgaveRepository oppgaveRepository = new OppgaveRepository();
+        return new ViewModelOppgave(oppgaveRepository);
+    }
 
-        AnsattUseCase ansattUseCase = new AnsattUseCase(ansattRepository);
-        StillingUseCase stillingUseCase = new StillingUseCase(stillingRepository);
-        OppgaveUseCase oppgaveUseCase = new OppgaveUseCase(oppgaveRepository);
-
-        return new ViewModel(
-                ansattUseCase,
-                stillingUseCase,
-                oppgaveUseCase
-        );
+    private static ViewModelAnsatt getViewModelAnsatt() {
+        IAnsattRepository ansattRepository = new AnsattRepository();
+        return new ViewModelAnsatt(ansattRepository);
     }
 
     public static void main(String[] args) {

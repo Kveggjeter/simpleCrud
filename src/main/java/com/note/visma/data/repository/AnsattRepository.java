@@ -1,128 +1,80 @@
 package com.note.visma.data.repository;
 
-import com.note.visma.data.datasource.DbConnect;
 import com.note.visma.data.model.Ansatt;
+import com.note.visma.data.model.SqlProperties;
+import com.note.visma.data.sql.AnsattSQL;
 import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.repository.IAnsattRepository;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
-public class AnsattRepository implements IAnsattRepository {
+public class AnsattRepository extends CRUD<Ansatt, AnsattDom> implements IAnsattRepository {
 
-    private final Connection connection;
+    public AnsattRepository() {;}
 
-    public AnsattRepository() {
-        this.connection = DbConnect.getConnection();
+    @Override
+    protected void setInsertValues(PreparedStatement stmt, Ansatt ansatt) {
+        try {
+            stmt.setString(1, ansatt.fornavn());
+            stmt.setString(2, ansatt.etternavn());
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    @Override
+    protected void setSqlProperties() {
+        sqlProperties = new SqlProperties(
+                AnsattSQL.TABLE.getSql(),
+                AnsattSQL.GET_ALL.getSql(),
+                AnsattSQL.GET_BY_ID.getSql(),
+                AnsattSQL.INSERT.getSql(),
+                AnsattSQL.GET_SEARCH.getSql(),
+                AnsattSQL.GET_BY_ANSATT_ID.getSql(),
+                AnsattSQL.GET_ALL_WITHOUT_VALUE.getSql(),
+                AnsattSQL.UPDATE.getSql(),
+                AnsattSQL.DELETE.getSql()
+        );
+    }
+
+    @Override
+    protected Ansatt mapper(ResultSet rs) throws SQLException {
+        return new Ansatt(
+                rs.getInt("ansatt_id"),
+                rs.getString("fornavn"),
+                rs.getString("etternavn")
+        );
     }
 
     @Override
     public void insert(AnsattDom ansatt) throws SQLException {
-        String sql = "INSERT INTO ansatte (fornavn, etternavn) VALUES (?, ?)";
         Ansatt dataAnsatt = Ansatt.fromDomain(ansatt);
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-
-            stmt.setString(1, dataAnsatt.fornavn());
-            stmt.setString(2, dataAnsatt.etternavn());
-            stmt.executeUpdate();
-        }
+        addToDb(dataAnsatt);
     }
 
     @Override
     public List<AnsattDom> getAll() throws SQLException {
-        List<AnsattDom> ansatte = new ArrayList<>();
-        String sql = "SELECT * FROM ansatte";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                Ansatt dataAnsatt = new Ansatt(
-                        rs.getInt("ansatt_id"),
-                        rs.getString("fornavn"),
-                        rs.getString("etternavn")
-                );
-
-                ansatte.add(dataAnsatt.toDomain());
-            }
-        }
-        return ansatte;
+       return fetchAll();
     }
 
     @Override
     public List<AnsattDom> getSearch(String search) throws SQLException {
-        List<AnsattDom> ansatte = new ArrayList<>();
-        String sql = "SELECT * FROM ansatte WHERE fornavn ILIKE ?" +
-                " OR etternavn ILIKE ? OR CAST(ansatt_id AS TEXT) ILIKE ?";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            String pattern = "%" + search + "%";
-            ps.setString(1, pattern);
-            ps.setString(2, pattern);
-            ps.setString(3, pattern);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Ansatt dataAnsatt = new Ansatt(
-                            rs.getInt("ansatt_id"),
-                            rs.getString("fornavn"),
-                            rs.getString("etternavn")
-                    );
-                    ansatte.add(dataAnsatt.toDomain());
-                }
-            }
-        }
-        return ansatte;
+        return search(search);
     }
 
     @Override
     public List<AnsattDom> getAllAnsatt() throws SQLException {
-        List<AnsattDom> ansatte = new ArrayList<>();
-        String sql = "SELECT a.ansatt_id, a.fornavn, a.etternavn " +
-                "FROM ansatte a " +
-                "WHERE a.ansatt_id IN (SELECT ansatt_id FROM stillinger)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                Ansatt dataAnsatt = new Ansatt(
-                        rs.getInt("ansatt_id"),
-                        rs.getString("fornavn"),
-                        rs.getString("etternavn")
-                );
-                ansatte.add(dataAnsatt.toDomain());
-            }
-        }
-        return ansatte;
+        return fetchAll(sqlProperties.getByAnsattIdSql());
     }
 
     @Override
     public AnsattDom getById(int id) throws SQLException {
-        String sql = "SELECT * FROM ansatte WHERE ansatt_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Ansatt dataAnsatt = new Ansatt(
-                            rs.getInt("ansatt_id"),
-                            rs.getString("fornavn"),
-                            rs.getString("etternavn")
-                    );
-                    return dataAnsatt.toDomain();
-                }
-            }
-        }
-        return null;
+       return fetchOneById(id);
     }
 
     @Override
     public void deleteById(int id) throws SQLException {
-        String sql = "DELETE FROM ansatte WHERE ansatt_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        }
+        delete(id);
     }
 
 }

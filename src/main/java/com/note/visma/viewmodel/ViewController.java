@@ -3,11 +3,11 @@ package com.note.visma.viewmodel;
 import com.note.visma.domain.model.AnsattDom;
 import com.note.visma.domain.model.OppgaveDom;
 import com.note.visma.domain.model.StillingDom;
-import com.note.visma.domain.service.CheckForDate;
+import com.note.visma.domain.service.validator.CheckForDate;
+import com.note.visma.viewmodel.common.AlertBox;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -20,10 +20,14 @@ import java.util.function.Function;
 
 public class ViewController {
 
-    private ViewModel viewModel;
+    private ViewModelAnsatt viewModelAnsatt;
+    private ViewModelOppgave viewModelOppgave;
+    private ViewModelStilling viewModelStilling;
 
-    public void setViewModel(ViewModel viewModel) {
-        this.viewModel = viewModel;
+    public void setViewModel(ViewModelAnsatt viewModelAnsatt, ViewModelOppgave viewModelOppgave, ViewModelStilling viewModelStilling) {
+        this.viewModelAnsatt = viewModelAnsatt;
+        this.viewModelOppgave = viewModelOppgave;
+        this.viewModelStilling = viewModelStilling;
         initializeTables();
         loadTables();
     }
@@ -118,24 +122,22 @@ public class ViewController {
         fornavnCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().fornavn()));
         etternavnCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().etternavn()));
 
-        // STILLING
         stillingIdCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().stillingID()));
         stillingNavnCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().stillingNavn()));
         stillingAnsattIdCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().ansattID()));
         stillingStartCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().startDato()));
         stillingSluttCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().sluttDato()));
 
-        // OPPGAVE
         oppgaveIdCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().oppgaveID()));
         oppgaveNavnCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().oppgaveNavn()));
         oppgaveAnsattIdCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().ansattID()));
         oppgaveStartCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().startDato()));
         oppgaveSluttCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().sluttDato()));
         try {
-            populateChoiceBox(ansattChoiceOppgaveBox, viewModel.gettingAvailible(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
-            populateChoiceBox(ansattChoiceStillingBox, viewModel.gettingAvailible(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
-            populateChoiceBox(oppgaveChoiceBox, viewModel.getOppgaver(), o -> "[" + o.oppgaveID() + "] " + o.oppgaveNavn());
-            populateChoiceBox(stillingChoiceBox, viewModel.getStillinger(), s -> "[" + s.stillingID() + "] " + s.stillingNavn());
+            populateChoiceBox(ansattChoiceOppgaveBox, viewModelAnsatt.gettingAvailible(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
+            populateChoiceBox(ansattChoiceStillingBox, viewModelAnsatt.execute(), a -> "[" + a.ansattID() + "] " + a.fornavn() + " " + a.etternavn());
+            populateChoiceBox(oppgaveChoiceBox, viewModelOppgave.execute(), o -> "[" + o.oppgaveID() + "] " + o.oppgaveNavn());
+            populateChoiceBox(stillingChoiceBox, viewModelStilling.getAllStillingWithoutAnsatt(), s -> "[" + s.stillingID() + "] " + s.stillingNavn());
 
         } catch (Exception e) {
             System.out.println("Oopsie tihi");
@@ -144,11 +146,11 @@ public class ViewController {
 
     public void loadTables() {
         try {
-            ansattTable.getItems().setAll(viewModel.getAnsatte());
-            stillingTable.getItems().setAll(viewModel.getStillinger());
-            oppgaveTable.getItems().setAll(viewModel.getOppgaver());
+            ansattTable.getItems().setAll(viewModelAnsatt.execute());
+            stillingTable.getItems().setAll(viewModelStilling.execute());
+            oppgaveTable.getItems().setAll(viewModelOppgave.execute());
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Uventet feil ved lasting, vennligst se: " + e.getMessage());
         }
     }
 
@@ -156,30 +158,55 @@ public class ViewController {
     private void onSearchTable() {
         if(ansattVindu) {
             try {
-                ansattTable.getItems().setAll(viewModel.searchAnsatt(searchTableField.getText()));
+                ansattTable.getItems().setAll(viewModelAnsatt.execute(searchTableField.getText()));
             } catch (Exception e) {
-                e.printStackTrace();
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Uventet feil ved lasting, vennligst se: " + e.getMessage());
             }
         }
         if(stillingVindu) {
             try {
-                stillingTable.getItems().setAll(viewModel.searchStilling(searchTableField.getText()));
+                stillingTable.getItems().setAll(viewModelStilling.execute(searchTableField.getText()));
             } catch (Exception e) {
-                e.printStackTrace();
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Uventet feil ved lasting, vennligst se: " + e.getMessage());
             }
         }
         if(oppgaveVindu) {
             try {
-                oppgaveTable.getItems().setAll(viewModel.searchOppgave(searchTableField.getText()));
+                oppgaveTable.getItems().setAll(viewModelOppgave.execute(searchTableField.getText()));
             } catch (Exception e) {
-                e.printStackTrace();
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Uventet feil ved lasting, vennligst se: " + e.getMessage());
             }
         }
     }
 
     @FXML
     private void onTildelNyStilling(){
+        AnsattDom ansatt = ansattChoiceStillingBox.getValue();
+        StillingDom stilling = stillingChoiceBox.getValue();
+        boolean check = true;
 
+        try {
+            List<StillingDom> stillinger = viewModelStilling.getAllByAnsattID(ansatt.ansattID());
+            for (StillingDom stillingDom : stillinger) {
+                if (!CheckForDate.isDateValid(stillingDom, stilling))
+                    check = false;
+            }
+            if(check) {
+                viewModelStilling.updateById(ansatt.ansattID(), stilling.stillingID());
+                loadTables();
+                AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess", "Ansatt tildelt ny stilling");
+            }else {
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Den ansatte har allerede en annen" +
+                        " stilling for denne perioden");
+            }
+
+        } catch (Exception e) {
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Uventet feil ved tildeling, vennligst se: " + e.getMessage());
+        } finally {
+            ansattChoiceStillingBox.setValue(null);
+            stillingChoiceBox.setValue(null);
+            initializeTables();
+        }
     }
 
     @FXML
@@ -188,27 +215,23 @@ public class ViewController {
         AnsattDom ansatt = ansattChoiceOppgaveBox.getValue();
 
         try {
-            StillingDom stilling = viewModel.getByAnsattId(ansatt.ansattID());
+            StillingDom stilling = viewModelStilling.getByAnsattId(ansatt.ansattID());
             if (CheckForDate.isDateValid(stilling, oppgave)) {
-                viewModel.updateOppgave(ansatt.ansattID(), oppgave.oppgaveID());
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Oppgave tildel");
-                alert.setHeaderText(null);
-                alert.setContentText("Ansatt har fått ny oppgave");
-                alert.showAndWait();
+                viewModelOppgave.execute(ansatt.ansattID(), oppgave.oppgaveID());
+                loadTables();
+                AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess", "Ansatt tildelt ny oppgave");
             }
             else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Ingen korrelasjon med tid");
-                alert.setHeaderText(null);
-                alert.setContentText("Ansatt har ingen aktiv stilling i den perioden oppgaven skal utføres!");
-                alert.showAndWait();
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Den ansatte har ikke et" +
+                        " stillingsforhold i denne perioden");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Her gikk noe fryktelig galt, se hvorfor:" +
+                    " " + e.getMessage());
         } finally {
             oppgaveChoiceBox.setValue(null);
             ansattChoiceOppgaveBox.setValue(null);
+            initializeTables();
         }
 
 
@@ -232,22 +255,19 @@ public class ViewController {
             );
 
             if(fornavnField.getText().isEmpty() || etternavnField.getText().isEmpty()) {
-                System.out.println("Vennligst fyll ut alle feltene");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Vennligst fyll ut alle feltene");
                 return;
             }
-            viewModel.addAnsatt(ansatt);
+            viewModelAnsatt.execute(ansatt);
             loadTables();
             fornavnField.clear();
             etternavnField.clear();
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Ansatt opprettet");
-            alert.setHeaderText(null);
-            alert.setContentText("Ansatt er lagret!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess", "Ansatt opprettet!");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Klarte ikke å lage ansatt. Les: " + e.getMessage());
+        } finally {
+            initializeTables();
         }
     }
 
@@ -258,29 +278,24 @@ public class ViewController {
         try {
             ansattID = Integer.parseInt(ansattIdField.getText());
             if(ansattID == 0) {
-                System.err.println("oppgave id er tom");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Nummeret du har valgt" +
+                        "ser ikke ut til å være gyldig.");
                 return;
             }
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Feil innmat");
-            alert.setHeaderText(null);
-            alert.setContentText("Fyll inn en gyldig oppgave ID!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Får ikke slettet ansatt! Prøv igjen");
             return;
         }
 
         try {
-            viewModel.deleteAnsatt(ansattID);
+            viewModelAnsatt.execute(ansattID);
             loadTables();
             ansattIdField.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Ansatte oppdatert");
-            alert.setHeaderText(null);
-            alert.setContentText("Ansatt er slettet!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess!", "Ansatt slettet.");
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Her gikk det galt, se hvorfor: " + e.getMessage());
+        } finally {
+            initializeTables();
         }
     }
 
@@ -295,23 +310,20 @@ public class ViewController {
 
             if(stillingnavnField.getText().isEmpty() || stillingStartPicker.getValue() == null
                 || stillingSluttPicker.getValue() == null ) {
-                System.out.println("Vennligst fyll ut alle feltene");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Vennligst fyll ut alle feltene.");
                 return;
             }
-            viewModel.addStilling(stilling);
+            viewModelStilling.execute(stilling);
             loadTables();
             stillingnavnField.clear();
             stillingStartPicker.setValue(null);
             stillingSluttPicker.setValue(null);
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Stilling opprettet");
-            alert.setHeaderText(null);
-            alert.setContentText("Stillingen er lagret!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess!", "Stilling opprettet.");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Her gikk det galt, se hvorfor: " + e.getMessage());
+        } finally {
+            initializeTables();
         }
     }
 
@@ -322,29 +334,24 @@ public class ViewController {
         try {
             stillingId = Integer.parseInt(stillingIdField.getText());
             if(stillingId == 0) {
-                System.err.println("stilling id er tom");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Felt for ID er tomt");
                 return;
             }
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Feil innmat");
-            alert.setHeaderText(null);
-            alert.setContentText("Fyll inn en gyldig stilling ID!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "ID ikke gyldig, prøv igjen med gyldig ID");
             return;
         }
 
         try {
-            viewModel.deleStilling(stillingId);
+            viewModelStilling.execute(stillingId);
             loadTables();
             stillingIdField.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Stillinger oppdatert");
-            alert.setHeaderText(null);
-            alert.setContentText("Stillingen er slettet!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess!", "Stilling er slettet.");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Her gikk noe fryktelig galt, les hvorfor: " + e.getMessage());
+        } finally {
+            initializeTables();
         }
     }
 
@@ -356,29 +363,23 @@ public class ViewController {
         try {
             oppgaveId = Integer.parseInt(oppgaveIdField.getText());
             if(oppgaveId == 0) {
-                System.err.println("oppgave id er tom");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Felt for ID er tomt");
                 return;
             }
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Feil innmat");
-            alert.setHeaderText(null);
-            alert.setContentText("Fyll inn en gyldig oppgave ID!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "ID ikke gyldig, prøv igjen med gyldig ID");
             return;
         }
 
         try {
-            viewModel.deleteOppgave(oppgaveId);
+            viewModelOppgave.execute(oppgaveId);
             loadTables();
             oppgaveIdField.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Oppgave oppdatert");
-            alert.setHeaderText(null);
-            alert.setContentText("Oppgaven er slettet!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess!", "Oppgave slettet");
         } catch (Exception e) {
-            e.printStackTrace();
+            AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Her gikk noe fryktelig galt. Les hvorfor: " + e.getMessage());
+        } finally {
+            initializeTables();
         }
     }
 
@@ -395,25 +396,22 @@ public class ViewController {
             // TODO: Bytte ut med label senere
             if (oppgaveNavnField.getText().isEmpty() || oppgaveStartPicker.getValue() == null
                     || oppgaveSluttPicker.getValue() == null) {
-                System.out.println("Vennligst fyll ut alle feltene");
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Vennligst fyll ut alle feltene.");
                 return;
             }
 
-            viewModel.addOppgave(oppgave);
+            viewModelOppgave.execute(oppgave);
             loadTables();
             oppgaveNavnField.clear();
             oppgaveStartPicker.setValue(null);
             oppgaveSluttPicker.setValue(null);
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Oppgave opprettet");
-            alert.setHeaderText(null);
-            alert.setContentText("Oppgaven er lagret!");
-            alert.showAndWait();
+            AlertBox.alertBox(Alert.AlertType.INFORMATION, "Suksess!", "Oppgave opprettet!");
 
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            initializeTables();
         }
     }
 

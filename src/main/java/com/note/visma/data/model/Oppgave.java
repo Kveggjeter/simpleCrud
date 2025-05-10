@@ -1,7 +1,6 @@
 package com.note.visma.data.model;
 
 import com.note.visma.domain.model.OppgaveDom;
-
 import java.sql.Date;
 
 public record Oppgave(
@@ -10,7 +9,7 @@ public record Oppgave(
         Integer ansattID,
         Date startDato,
         Date sluttDato
-) {
+) implements DomainConvertible<OppgaveDom> {
     public OppgaveDom toDomain() {
         return new OppgaveDom(oppgaveID, oppgaveNavn, ansattID, startDato.toLocalDate(), sluttDato.toLocalDate());
     }

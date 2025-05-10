@@ -1,16 +1,17 @@
 package com.note.visma.data.model;
 
 import com.note.visma.domain.model.StillingDom;
-
 import java.sql.Date;
 
-public record Stilling(
+public record Stilling (
         int stillingID,
         String stillingNavn,
         Integer ansattID,
         Date startDato,
         Date sluttDato
-) {
+) implements DomainConvertible<StillingDom> {
+
+    @Override
     public StillingDom toDomain() {
         return new StillingDom(stillingID, stillingNavn, ansattID, startDato.toLocalDate(), sluttDato.toLocalDate());
     }

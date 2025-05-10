@@ -6,7 +6,7 @@ public record Ansatt(
         int ansattID,
         String fornavn,
         String etternavn
-) {
+) implements DomainConvertible<AnsattDom> {
 
     public AnsattDom toDomain() {
         return new AnsattDom(ansattID, fornavn, etternavn);
