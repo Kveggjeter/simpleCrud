@@ -8,8 +8,8 @@ public class CheckForDate {
     public CheckForDate() {}
 
     public static boolean isDateValid(StillingDom stilling, OppgaveDom oppgave) {
-        return oppgave.sluttDato().isBefore(stilling.startDato()) ||
-                oppgave.startDato().isAfter(stilling.sluttDato());
+        return !oppgave.startDato().isBefore(stilling.startDato()) &&
+                !oppgave.sluttDato().isAfter(stilling.sluttDato());
     }
 
     public static boolean isDateValid(StillingDom eksisterende, StillingDom ny) {
