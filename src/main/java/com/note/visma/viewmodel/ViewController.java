@@ -308,6 +308,12 @@ public class ViewController {
                     stillingStartPicker.getValue(), stillingSluttPicker.getValue()
             );
 
+            if (stillingStartPicker.getValue().isAfter(stillingSluttPicker.getValue())) {
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Start-dato må være før slutt-dato");
+                stillingSluttPicker.setValue(null);
+                return;
+            }
+
             if(stillingnavnField.getText().isEmpty() || stillingStartPicker.getValue() == null
                 || stillingSluttPicker.getValue() == null ) {
                 AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Vennligst fyll ut alle feltene.");
@@ -392,6 +398,12 @@ public class ViewController {
                     0, oppgaveNavnField.getText(), null,
                     oppgaveStartPicker.getValue(), oppgaveSluttPicker.getValue()
             );
+
+            if (oppgaveStartPicker.getValue().isAfter(oppgaveSluttPicker.getValue())) {
+                AlertBox.alertBox(Alert.AlertType.ERROR, "Ops!", "Start-dato må være før slutt-dato");
+                oppgaveSluttPicker.setValue(null);
+                return;
+            }
 
             // TODO: Bytte ut med label senere
             if (oppgaveNavnField.getText().isEmpty() || oppgaveStartPicker.getValue() == null
