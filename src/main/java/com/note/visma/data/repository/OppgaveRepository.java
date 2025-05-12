@@ -22,7 +22,7 @@ public class OppgaveRepository extends CRUD<Oppgave, OppgaveDom> implements IOpp
                 stmt.setInt(2, oppgave.ansattID());
             else stmt.setNull(2, java.sql.Types.INTEGER);
             stmt.setDate(3, oppgave.startDato());
-            stmt.setDate(4, oppgave.startDato());
+            stmt.setDate(4, oppgave.sluttDato());
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }

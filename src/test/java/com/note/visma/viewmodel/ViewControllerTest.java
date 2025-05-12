@@ -20,6 +20,8 @@ class ViewControllerTest {
         return new OppgaveDom(1, "Lage app", 1, start, slutt);
     }
 
+
+
     @Test
     void testEnkeltTilfelleMatch() {
         StillingDom stilling = ViewControllerTest.stilling(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
