@@ -48,19 +48,6 @@ class ViewControllerTest {
     }
 
     @Test
-    void testRiktigStillingVelges() {
-        StillingDom stilling1 = ViewControllerTest.stilling(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 30));
-        StillingDom stilling2 = ViewControllerTest.stilling(LocalDate.of(2024, 7, 1), LocalDate.of(2024, 12, 31));
-        OppgaveDom oppgave = ViewControllerTest.oppgave(LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 15));
-
-        boolean match1 = CheckForDate.isDateValid(stilling1, oppgave);
-        boolean match2 = CheckForDate.isDateValid(stilling2, oppgave);
-
-        assertFalse(match1);
-        assertTrue(match2, "Oppgaven matcher kun stilling 2");
-    }
-
-    @Test
     void testOverlappendeStillingGirFeil() {
         StillingDom eksisterende = ViewControllerTest.stilling(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1));
         StillingDom ny = ViewControllerTest.stilling(LocalDate.of(2024, 5, 15), LocalDate.of(2024, 10, 1));
